@@ -7,7 +7,7 @@ var del = Promise.promisify(require('del'));
 var slug = require('slug');
 var l = require('lodash');
 
-var SiliconZucchini = require('../../');
+var SiliconZucchini = require('../../lib');
 var S = SiliconZucchini;
 
 function getData() {
