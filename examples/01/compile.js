@@ -15,6 +15,7 @@ function getData() {
   .pipe(S.loadCson())
   .pipe(S.loadJson())
   .pipe(S.loadCsonFrontmatter())
+  .pipe(S.loadMarkdown())
   .pipe(S.dataDefaults('^articles/', {
     schema: {$ref: '#article'},
     slug: function (a) {
@@ -52,11 +53,12 @@ Promise.all([
   collect(getTemplates()),
   del('build')
 ])
-.spread(function (data, schemas, templates) {
-  data.map(function (item) {
-    return S.dataValidate(item, {schemas: schemas});
+.tap(function (inputs) {
+  inputs[0].map(function (item) {
+    return S.dataValidate(item, {schemas: inputs[1]});
   });
-
+})
+.spread(function (data, schemas, templates) {
   function getTemplate(name) {
     return l.find(templates, function (t) {
       return t.relative === name;
@@ -86,16 +88,28 @@ Promise.all([
   ]);
 
   return Promise.map(routes, function (route) {
-    var html = S.renderTemplate(route.layout, route.data, {
-      schemas: schemas, getTemplate: getTemplate
-    });
     var filePath = path.join('build', route.route, 'index.html');
-    return writeFile(filePath, html)
+
+    return Promise.try(function () {
+      return S.renderTemplate(route.layout, route.data, {
+        schemas: schemas, getTemplate: getTemplate
+      });
+    })
+    .then(function (html) {
+      return writeFile(filePath, html);
+    })
     .then(function () {
       console.log('✓', filePath);
+    })
+    .catch(function (err) {
+      err.relative = filePath;
+      throw err;
     });
   });
 })
 .catch(function (err) {
-  console.error('oh noes!', err);
+  err = l.isArray(err) ? err : [err];
+  err.forEach(function (e) {
+    console.error('✘', e.relative || '', e.message);
+  });
 });

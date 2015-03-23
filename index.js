@@ -5,6 +5,7 @@ module.exports = {
   loadCson: require('./lib/load-cson'),
   loadCsonFrontmatter: require('./lib/load-cson-frontmatter'),
   loadJson: require('./lib/load-json'),
+  loadMarkdown: require('./lib/load-markdown'),
   renderTemplate: require('./lib/render-template'),
   stripFileExt: require('./lib/helpers/strip-file-ext')
 };
