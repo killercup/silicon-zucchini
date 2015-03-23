@@ -14,7 +14,6 @@ function getData(src) {
   .pipe(S.loadJson())
   .pipe(S.loadCsonFrontmatter())
   .pipe(S.loadMarkdown())
-
   ;
 }
 
@@ -31,6 +30,23 @@ function getTemplates(src) {
   ;
 }
 
+/**
+ * # Build a Silicon Zucchini
+ * @param {Object}    opts               A truckload of options
+ * @param {String}   [opts.data]         Path glob to find data files
+ * @param {String}   [opts.schemas]      Path glob to find schema files
+ * @param {String}   [opts.templates]    Path glob to find template files
+ * @param {Function} [opts.processData]  Takes a vinyl-fs stream of data files,
+ *   manipulates that data, returns a vinyl-fs stream
+ * @param {Function} [opts.createRoutes] Callback to create a route object.
+ *   Input parameters are `data: [{}], schemas: [{}], getTemplate: Function`.
+ *   Needs to return an array of Route objects or arrays (it will be flattened).
+ *   Route objects have the shape `{data: {}, route: String, layout: String}`.
+ * @param {String}   [opts.destination='build']  Output folder.
+ * @param {Object}   [opts.templateHelpers] Map of additonal function that will
+ *   be available in templates.
+ * @return {Promise} Will be resolved when all processing is done.
+ */
 function buildSiliconZucchini(opts) {
   var settings = l.defaults({}, opts, {
     data: './data/**/*.{json,cson,md}',
