@@ -30,6 +30,18 @@ function getTemplates(src) {
   ;
 }
 
+function defaultSettings(opts) {
+  return l.defaults({}, opts, {
+    data: './data/**/*.{json,cson,md}',
+    schemas: './src/schemas/**/*.{json,cson}',
+    templates: './src/**/*.html',
+    processData: l.identity,
+    createRoutes: l.identity,
+    destination: 'build',
+    templateHelpers: {}
+  });
+}
+
 /**
  * # Build a Silicon Zucchini
  * @param {Object}    opts               A truckload of options
@@ -48,15 +60,7 @@ function getTemplates(src) {
  * @return {Promise} Will be resolved when all processing is done.
  */
 function buildSiliconZucchini(opts) {
-  var settings = l.defaults({}, opts, {
-    data: './data/**/*.{json,cson,md}',
-    schemas: './src/schemas/**/*.{json,cson}',
-    templates: './src/**/*.html',
-    processData: l.identity,
-    createRoutes: l.identity,
-    destination: 'build',
-    templateHelpers: {}
-  });
+  var settings = defaultSettings(opts);
 
   return Promise.all([
     collect(settings.processData(getData(settings.data))),
@@ -101,7 +105,11 @@ function buildSiliconZucchini(opts) {
         throw err;
       });
     });
-  })
+  });
+}
+
+function compileAZucchini(opts) {
+  return buildSiliconZucchini(opts)
   .catch(function (err) {
     err = l.isArray(err) ? err : [err];
     err.forEach(function (e) {
@@ -110,5 +118,54 @@ function buildSiliconZucchini(opts) {
   });
 }
 
-module.exports = buildSiliconZucchini;
-module.exports.Helpers = S;
+function watchMyZucchini(opts, cb) {
+  console.log('watch dis', [opts.data, opts.schemas, opts.templates]);
+  fs.watch([opts.data, opts.schemas, opts.templates])
+  .on('change', cb);
+}
+
+function serveZucchini(opts) {
+  var settings = l.defaults({}, defaultSettings(opts), {
+    port: 3000,
+    livereload: 35729
+  });
+
+  settings.templateHelpers.livereload = true;
+
+  var Static = require('node-static');
+  var files = new Static.Server(opts.destination);
+  var livereload = require('livereload').createServer({
+    port: settings.livereload,
+    applyCSSLive: true
+  });
+  livereload.watch(settings.destination);
+
+  var server = require('http').createServer(function (req, res) {
+    req.on('end', function () {
+      files.serve(req, res);
+    }).resume();
+  });
+
+  compileAZucchini(settings)
+  .then(function () {
+    console.log('Begin watching');
+    server.listen(settings.port, function () {
+      console.log(
+        'Now serving build stuff on http://localhost:' + settings.port
+      );
+    });
+
+    watchMyZucchini(settings, function (ev) {
+      console.log(ev);
+      compileAZucchini(settings);
+    });
+  });
+}
+
+module.exports = {
+  build: buildSiliconZucchini,
+  compile: compileAZucchini,
+  watch: watchMyZucchini,
+  serve: serveZucchini,
+  Helpers: S
+};

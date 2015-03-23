@@ -3,8 +3,10 @@ name: "Page"
 input:
   $ref: "#page"
 ---
+{{ include("templates/_head.html", data) }}
 <article>
   <h1>
     {{ data.title }}
   </h1>
 </article>
+{{ include("templates/_tail.html", data) }}

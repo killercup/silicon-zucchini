@@ -45,7 +45,7 @@ function createRoutes(data, schemas, getTemplate) {
   ];
 }
 
-SiliconZucchini({
+SiliconZucchini.serve({
   processData: setDataDefaults,
   createRoutes: createRoutes,
   destination: 'build',

@@ -6,6 +6,8 @@ input:
     type: "array"
     items: { $ref: "#article" }
 ---
+{{ include("templates/_head.html", data) }}
 {% data.articles.forEach(function(article) { %}
   {{ include("organisms/article-teaser.html", article) }}
 {% }); %}
+{{ include("templates/_tail.html", data) }}
