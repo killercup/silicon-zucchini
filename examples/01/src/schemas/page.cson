@@ -1,0 +1,9 @@
+title: "page"
+type: "object"
+required: ["title", "content"]
+properties:
+  title:
+    type: "string"
+    maxLength: 255
+  content:
+    type: "string"

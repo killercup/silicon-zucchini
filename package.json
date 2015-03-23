@@ -1,0 +1,42 @@
+{
+  "name": "silicon-zucchini",
+  "version": "0.0.1",
+  "description": "Generate glorious and amazing static sites",
+  "main": "index.js",
+  "scripts": {
+    "test": "node examples/*/build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/killercup/silicon-zucchini.git"
+  },
+  "keywords": [
+    "static",
+    "site",
+    "generator",
+    "metalsmith"
+  ],
+  "author": "Pascal Hertleif <killercup@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/killercup/silicon-zucchini/issues"
+  },
+  "homepage": "https://github.com/killercup/silicon-zucchini",
+  "dependencies": {
+    "bluebird": "^2.9.14",
+    "collect-stream": "^1.0.0",
+    "cson": "^3.0.1",
+    "del": "^1.1.1",
+    "fs-extra": "^0.16.5",
+    "globby": "^1.2.0",
+    "lodash": "^3.5.0",
+    "map-stream": "0.0.5",
+    "slug": "^0.8.0",
+    "vinyl-fs": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^0.17.1",
+    "eslint-plugin-mocha": "^0.2.2",
+    "eslint-plugin-nodeca": "^1.0.3"
+  }
+}

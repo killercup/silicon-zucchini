@@ -1,0 +1,7 @@
+title: "article"
+type: "object"
+required: ["title", "content"]
+properties:
+  title: {type: "string"}
+  teaser: {type: "string"}
+  content: {type: "string"}

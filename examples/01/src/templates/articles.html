@@ -1,0 +1,11 @@
+---
+name: "Article"
+input:
+  type: "object"
+  articles:
+    type: "array"
+    items: { $ref: "#article" }
+---
+{% data.articles.forEach(function(article) { %}
+  {{ include("organisms/article-teaser.html", article) }}
+{% }); %}
