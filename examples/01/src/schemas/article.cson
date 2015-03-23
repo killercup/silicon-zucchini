@@ -5,3 +5,4 @@ properties:
   title: {type: "string"}
   teaser: {type: "string"}
   content: {type: "string"}
+  date: {type: "string"}

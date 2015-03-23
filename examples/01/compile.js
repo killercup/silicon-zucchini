@@ -16,13 +16,13 @@ function getData() {
   .pipe(S.loadJson())
   .pipe(S.loadCsonFrontmatter())
   .pipe(S.dataDefaults('^articles/', {
-    schema: 'article',
+    schema: {$ref: '#article'},
     slug: function (a) {
       return a.data.slug || slug(a.data.title).toLowerCase();
     }
   }))
   .pipe(S.dataDefaults('^pages/', {
-    schema: 'page',
+    schema: {$ref: '#page'},
     permalink: function (p) {
       return p.data.permalink || S.stripFileExt(p.relative);
     }
@@ -45,7 +45,10 @@ function getTemplates() {
 
 Promise.all([
   collect(getData()),
-  collect(getSchemas()),
+  collect(getSchemas())
+  .then(function (schemas) {
+    return l.indexBy(l.pluck(schemas, 'data'), 'title');
+  }),
   collect(getTemplates()),
   del('build')
 ])
