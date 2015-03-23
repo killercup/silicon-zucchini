@@ -7,7 +7,14 @@ input:
     items: { $ref: "#article" }
 ---
 {{ include("templates/_head.html", data) }}
-{% data.articles.forEach(function(article) { %}
-  {{ include("organisms/article-teaser.html", article) }}
-{% }); %}
+
+<section>
+  <h1>Artikel</h1>
+  <p>Aktuell gibt es {{data.articles.length}} Artikel.</p>
+
+  {% data.articles.forEach(function(article) { %}
+    {{ include("organisms/article-teaser.html", article) }}
+  {% }); %}
+</section>
+
 {{ include("templates/_tail.html", data) }}

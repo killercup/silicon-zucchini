@@ -1,4 +1,5 @@
-title: "Start page!"
+title: "WELCOME!!"
 content: ""
 subtitle: "Sup ya fools?"
 permalink: '/'
+layout: 'templates/start.html'

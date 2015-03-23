@@ -6,6 +6,11 @@ var writeFile = Promise.promisify(require('fs-extra').outputFile);
 var del = Promise.promisify(require('del'));
 var l = require('lodash');
 
+var LOG_NAME = 'Zucchini';
+process.env.DEBUG = process.env.DEBUG || LOG_NAME + ':*';
+var log = require('debug-logger')(LOG_NAME);
+log.inspectOptions = {colors: true};
+
 var S = require('./lib');
 
 function getData(src) {
@@ -84,6 +89,7 @@ function buildSiliconZucchini(opts) {
     }
 
     var routes = l.flatten(settings.createRoutes(data, schemas, getTemplate));
+    var routesByPath = l.indexBy(routes, 'route');
 
     return Promise.map(routes, function (route) {
       var filePath = path.join(settings.destination, route.route, 'index.html');
@@ -91,14 +97,18 @@ function buildSiliconZucchini(opts) {
       return Promise.try(function () {
         return S.renderTemplate(route.layout, route.data, {
           schemas: schemas, getTemplate: getTemplate,
-          settings: {imports: settings.templateHelpers}
+          settings: {imports: l.defaults({
+            routes: routesByPath,
+            currentRoute: route,
+            path: path
+          }, settings.templateHelpers)}
         });
       })
       .then(function (html) {
         return writeFile(filePath, html);
       })
       .then(function () {
-        console.log('✓', filePath);
+        log.info('✓', filePath);
       })
       .catch(function (err) {
         err.relative = filePath;
@@ -113,14 +123,14 @@ function compileAZucchini(opts) {
   .catch(function (err) {
     err = l.isArray(err) ? err : [err];
     err.forEach(function (e) {
-      console.error('✘', e.relative || '', e.message);
+      log.error('✘', e.relative || '', e.message);
     });
+    throw err;
   });
 }
 
 function watchMyZucchini(opts, cb) {
-  console.log('watch dis', [opts.data, opts.schemas, opts.templates]);
-  fs.watch([opts.data, opts.schemas, opts.templates])
+  fs.watch(l.flatten([opts.data, opts.schemas, opts.templates]))
   .on('change', cb);
 }
 
@@ -138,7 +148,6 @@ function serveZucchini(opts) {
     port: settings.livereload,
     applyCSSLive: true
   });
-  livereload.watch(settings.destination);
 
   var server = require('http').createServer(function (req, res) {
     req.on('end', function () {
@@ -148,18 +157,23 @@ function serveZucchini(opts) {
 
   compileAZucchini(settings)
   .then(function () {
-    console.log('Begin watching');
+    log.debug('Begin watching');
+    livereload.watch(settings.destination);
     server.listen(settings.port, function () {
-      console.log(
-        'Now serving build stuff on http://localhost:' + settings.port
+      log.info(
+        'Now serving built stuff on http://localhost:' + settings.port
       );
     });
 
     watchMyZucchini(settings, function (ev) {
-      console.log(ev);
+      log.info(
+        ev.type === 'changed' ? '✎' : '★',
+        path.relative(process.cwd(), ev.path)
+      );
       compileAZucchini(settings);
     });
-  });
+  })
+  .catch(log.error);
 }
 
 module.exports = {

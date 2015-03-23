@@ -4,8 +4,10 @@ input:
   $ref: "#article"
 ---
 <article class="article is-teaser">
-  <h1>{{ data.title }}</h1>
+  <h1>
+    <a href="/artikel/{{data.slug}}">{{ data.title }}</a>
+  </h1>
   <p class="teaser">
-    {{ data.teaser || data.content.slice(0, 80) }}
+    {{ data.teaser || S(data.content).stripTags().slice(0, 80).value() }}
   </p>
 </article>

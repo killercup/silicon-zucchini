@@ -24,7 +24,10 @@ function setDataDefaults(dataStream) {
 function createRoutes(data, schemas, getTemplate) {
   return [
     {
-      data: {articles: l.pluck(S.filterByPath('^articles/', data), 'data')},
+      data: {
+        title: 'Articles',
+        articles: l.pluck(S.filterByPath('^articles/', data), 'data')
+      },
       route: 'artikel',
       layout: getTemplate('templates/articles.html')
     },
@@ -32,14 +35,14 @@ function createRoutes(data, schemas, getTemplate) {
       return {
         data: article.data,
         route: path.join('artikel', article.data.slug),
-        layout: getTemplate('templates/article.html')
+        layout: getTemplate(article.data.layout || 'templates/article.html')
       };
     }),
     S.filterByPath('^pages/', data).map(function (page) {
       return {
         data: page.data,
         route: page.data.permalink,
-        layout: getTemplate('templates/page.html')
+        layout: getTemplate(page.data.layout || 'templates/page.html')
       };
     })
   ];
@@ -50,6 +53,7 @@ SiliconZucchini.serve({
   createRoutes: createRoutes,
   destination: 'build',
   templateHelpers: {
-    l: l
+    l: l,
+    S: require('underscore.string')
   }
 });
