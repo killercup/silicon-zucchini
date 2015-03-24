@@ -15,7 +15,8 @@ function setDataDefaults(dataStream) {
   .pipe(S.dataDefaults('^pages/', {
     schema: {$ref: '#page'},
     permalink: function (p) {
-      return p.data.permalink || S.stripFileExt(p.relative);
+      return p.data.permalink ||
+        S.stripFileExt(p.relative).replace(/^pages/, '');
     }
   }))
   ;
@@ -48,7 +49,7 @@ function createRoutes(data, schemas, getTemplate) {
   ];
 }
 
-SiliconZucchini.serve({
+SiliconZucchini[process.env.WATCH ? 'serve' : 'compile']({
   processData: setDataDefaults,
   createRoutes: createRoutes,
   destination: 'build',

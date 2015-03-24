@@ -1,5 +1,6 @@
 # Project specific stuff
 docs/
+examples/*/build
 
 # Logs
 logs
