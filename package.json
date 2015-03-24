@@ -4,7 +4,7 @@
   "description": "Generate glorious and amazing static sites",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test.js"
+    "test": "eslint lib/**/*.js examples/**/*.js *.js && mocha test.js"
   },
   "repository": {
     "type": "git",
