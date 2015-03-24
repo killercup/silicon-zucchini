@@ -1,4 +1,5 @@
-title: "page"
+title: "Page"
+id: "page"
 type: "object"
 required: ["title", "content"]
 properties:

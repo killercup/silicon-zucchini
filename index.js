@@ -71,10 +71,15 @@ function buildSiliconZucchini(opts) {
     collect(settings.processData(getData(settings.data))),
     collect(getSchemas(settings.schemas))
     .then(function (schemas) {
-      return l.indexBy(l.pluck(schemas, 'data'), 'title');
+      schemas.forEach(function (schema) {
+        if (!schema.data.id) {
+          throw new Error("Schema `" + schema.relative + "` has no ID");
+        }
+      });
+      return l.indexBy(l.pluck(schemas, 'data'), 'id');
     }),
     collect(getTemplates(settings.templates)),
-    del('build')
+    del(settings.destination)
   ])
   .tap(function (inputs) {
     inputs[0].map(function (item) {

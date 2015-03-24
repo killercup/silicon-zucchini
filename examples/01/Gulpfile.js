@@ -1,4 +1,5 @@
 var l = require('lodash');
+var gulp = require('gulp');
 var path = require('path');
 
 var SiliconZucchini = require('../../');
@@ -49,7 +50,7 @@ function createRoutes(data, schemas, getTemplate) {
   ];
 }
 
-SiliconZucchini[process.env.WATCH ? 'serve' : 'compile']({
+var ZUCCHINI_SETTINGS = {
   processData: setDataDefaults,
   createRoutes: createRoutes,
   destination: 'build',
@@ -57,4 +58,18 @@ SiliconZucchini[process.env.WATCH ? 'serve' : 'compile']({
     l: l,
     S: require('underscore.string')
   }
+};
+
+gulp.task('build', function () {
+  return SiliconZucchini.compile(ZUCCHINI_SETTINGS);
 });
+
+gulp.task('watch', function () {
+  return SiliconZucchini.watch(ZUCCHINI_SETTINGS);
+});
+
+gulp.task('styleguilde', function () {
+  SiliconZucchini.styleguide(ZUCCHINI_SETTINGS);
+});
+
+gulp.task('default', ['build']);

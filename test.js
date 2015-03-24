@@ -12,10 +12,12 @@ var examples = fs.readdirSync(EXAMPLES_PATH).filter(function (entry) {
 });
 
 describe("Silicon Zucchini", function () {
+  this.timeout(5000);
+
   examples.forEach(function (example) {
     it("Example " + example, function () {
       var examplePath = path.resolve(EXAMPLES_PATH, example);
-      return exec('node', ['build.js'], {
+      return exec('gulp', ['build'], {
         cwd: examplePath, env: l.defaults({DEBUG: 'false'}, process.env)
       })
       .then(function () {
