@@ -33,6 +33,7 @@ function getSchemas(src) {
   return fs.src(src)
   .pipe(S.loadCson())
   .pipe(S.loadJson())
+  .pipe(S.schemasValidate({requireId: true}))
   ;
 }
 
@@ -83,11 +84,6 @@ function buildSiliconZucchini(opts) {
     collect(settings.processData(getData(settings.data))),
     collect(getSchemas(settings.schemas))
     .then(function (schemas) {
-      schemas.forEach(function (schema) {
-        if (!schema.data.id) {
-          throw new Error("Schema `" + schema.relative + "` has no ID");
-        }
-      });
       return l.indexBy(l.pluck(schemas, 'data'), 'id');
     }),
     collect(getTemplates(settings.templates))
@@ -143,7 +139,7 @@ function buildSiliconZucchini(opts) {
     output.push(null);
   })
   .catch(function (err) {
-    output.push(err);
+    output.emit('error', err);
     output.push(null);
   });
 

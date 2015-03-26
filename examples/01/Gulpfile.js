@@ -73,7 +73,7 @@ gulp.task('clean', function (cb) {
 
 gulp.task('build', ['clean'], function () {
   return SiliconZucchini.compile(ZUCCHINI_SETTINGS)
-  .pipe(gulp.dest('build'))
+  .pipe(gulp.dest(ZUCCHINI_SETTINGS.destination))
   .pipe(connect.reload());
 });
 
