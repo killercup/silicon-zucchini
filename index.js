@@ -1,10 +1,11 @@
 var fs = require('vinyl-fs');
+var File = require('vinyl');
 var path = require('path');
+var stream = require('stream');
 var Promise = require('bluebird');
 Promise.longStackTraces();
 var collect = Promise.promisify(require('collect-stream'));
 var writeFile = Promise.promisify(require('fs-extra').outputFile);
-var del = Promise.promisify(require('del'));
 var l = require('lodash');
 var SchemaFaker = require('json-schema-faker');
 
@@ -75,7 +76,10 @@ function defaultSettings(opts) {
 function buildSiliconZucchini(opts) {
   var settings = defaultSettings(opts);
 
-  return Promise.all([
+  var output = new stream.Readable({ objectMode: true });
+  output._read = l.noop; /* eslint no-underscore-dangle: 0 */
+
+  Promise.all([
     collect(settings.processData(getData(settings.data))),
     collect(getSchemas(settings.schemas))
     .then(function (schemas) {
@@ -86,8 +90,7 @@ function buildSiliconZucchini(opts) {
       });
       return l.indexBy(l.pluck(schemas, 'data'), 'id');
     }),
-    collect(getTemplates(settings.templates)),
-    del(settings.destination)
+    collect(getTemplates(settings.templates))
   ])
   .tap(function (inputs) {
     inputs[0].map(function (item) {
@@ -105,7 +108,10 @@ function buildSiliconZucchini(opts) {
     var routesByPath = l.indexBy(routes, 'route');
 
     return Promise.map(routes, function (route) {
-      var filePath = path.join(settings.destination, route.route, 'index.html');
+      var filePath = path.join(
+        route.route.replace(/^\//, ''),
+        'index.html'
+      );
 
       return Promise.try(function () {
         return S.renderTemplate(route.layout, route.data, {
@@ -118,28 +124,34 @@ function buildSiliconZucchini(opts) {
         });
       })
       .then(function (html) {
-        return writeFile(filePath, html);
-      })
-      .then(function () {
+        var file = new File({
+          path: filePath,
+          contents: new Buffer(html)
+        });
+
+        output.push(file);
         log.info('✓', filePath);
       })
       .catch(function (err) {
         err.relative = filePath;
+        log.error('✘', filePath, err);
         throw err;
       });
     });
+  })
+  .then(function () {
+    output.push(null);
+  })
+  .catch(function (err) {
+    output.push(err);
+    output.push(null);
   });
+
+  return output;
 }
 
 function compileAZucchini(opts) {
-  return buildSiliconZucchini(opts)
-  .catch(function (err) {
-    err = l.isArray(err) ? err : [err];
-    err.forEach(function (e) {
-      log.error('✘', e.relative || '', e.message);
-    });
-    throw err;
-  });
+  return buildSiliconZucchini(opts);
 }
 
 function watchMyZucchini(opts, cb) {
@@ -197,8 +209,7 @@ function buildZucchiniGuide(opts) {
     .then(function (schemas) {
       return l.pluck(schemas, 'data');
     }),
-    collect(getTemplates(settings.templates)),
-    del(settings.styleguide)
+    collect(getTemplates(settings.templates))
   ])
   .spread(function (schemas, templates) {
     function getTemplate(name) {

@@ -39,6 +39,7 @@
     "slug": "^0.8.0",
     "through2": "^0.6.3",
     "underscore.string": "^3.0.3",
+    "vinyl": "^0.4.6",
     "vinyl-fs": "^1.0.0"
   },
   "devDependencies": {
