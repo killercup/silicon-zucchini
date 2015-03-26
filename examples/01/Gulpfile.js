@@ -27,16 +27,17 @@ function setDataDefaults(dataStream) {
   .pipe(S.dataDefaults('^articles/', {
     schema: {$ref: '#article'},
     slug: function (a) {
-      return a.data.slug || S.slug(a.data.title).toLowerCase();
+      return S.slug(a.data.title).toLowerCase();
     }
   }))
   .pipe(S.dataDefaults('^pages/', {
     schema: {$ref: '#page'},
     permalink: function (p) {
-      return p.data.permalink ||
-        S.stripFileExt(p.relative).replace(/^pages/, '');
+      return S.stripFileExt(p.relative).replace(/^pages/, '');
     }
   }))
+  .pipe(S.uniqFields(['slug'], '^articles/'))
+  .pipe(S.uniqFields(['permalink'], '^pages/'))
   ;
 }
 

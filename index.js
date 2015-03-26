@@ -3,7 +3,7 @@ var File = require('vinyl');
 var path = require('path');
 var stream = require('stream');
 var Promise = require('bluebird');
-Promise.longStackTraces();
+if (process.env.DEBUG) { Promise.longStackTraces(); }
 var collect = Promise.promisify(require('collect-stream'));
 var writeFile = Promise.promisify(require('fs-extra').outputFile);
 var l = require('lodash');
