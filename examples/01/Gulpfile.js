@@ -1,7 +1,8 @@
 var l = require('lodash');
-var gulp = require('gulp');
 var path = require('path');
 var del = require('del');
+var gulp = require('gulp');
+var connect = require('gulp-connect');
 
 var SiliconZucchini = require('../../');
 var S = SiliconZucchini.Helpers;
@@ -72,11 +73,23 @@ gulp.task('clean', function (cb) {
 
 gulp.task('build', ['clean'], function () {
   return SiliconZucchini.compile(ZUCCHINI_SETTINGS)
-  .pipe(gulp.dest('build'));
+  .pipe(gulp.dest('build'))
+  .pipe(connect.reload());
 });
 
-gulp.task('watch', ['clean'], function () {
-  return SiliconZucchini.watch(ZUCCHINI_SETTINGS);
+gulp.task('watch', ['clean', 'build'], function () {
+  return gulp.watch(l.flatten([
+    ZUCCHINI_SETTINGS.data,
+    ZUCCHINI_SETTINGS.schemas,
+    ZUCCHINI_SETTINGS.templates
+  ]), ['build']);
+});
+
+gulp.task('serve', ['watch'], function () {
+  connect.server({
+    root: ZUCCHINI_SETTINGS.destination,
+    livereload: true
+  });
 });
 
 gulp.task('styleguilde', function () {

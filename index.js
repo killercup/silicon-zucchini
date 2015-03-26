@@ -159,48 +159,6 @@ function watchMyZucchini(opts, cb) {
   .on('change', cb);
 }
 
-function serveZucchini(opts) {
-  var settings = l.defaults({}, defaultSettings(opts), {
-    port: 3000,
-    livereload: 35729
-  });
-
-  settings.templateHelpers.livereload = true;
-
-  var Static = require('node-static');
-  var files = new Static.Server(opts.destination);
-  var livereload = require('livereload').createServer({
-    port: settings.livereload,
-    applyCSSLive: true
-  });
-
-  var server = require('http').createServer(function (req, res) {
-    req.on('end', function () {
-      files.serve(req, res);
-    }).resume();
-  });
-
-  compileAZucchini(settings)
-  .then(function () {
-    log.debug('Begin watching');
-    livereload.watch(settings.destination);
-    server.listen(settings.port, function () {
-      log.info(
-        'Now serving built stuff on http://localhost:' + settings.port
-      );
-    });
-
-    watchMyZucchini(settings, function (ev) {
-      log.info(
-        ev.type === 'changed' ? '✎' : '★',
-        path.relative(process.cwd(), ev.path)
-      );
-      compileAZucchini(settings);
-    });
-  })
-  .catch(log.error);
-}
-
 function buildZucchiniGuide(opts) {
   var settings = defaultSettings(opts);
 
@@ -284,7 +242,6 @@ module.exports = {
   build: buildSiliconZucchini,
   compile: compileAZucchini,
   watch: watchMyZucchini,
-  serve: serveZucchini,
   styleguide: buildZucchiniGuide,
   Helpers: S
 };
