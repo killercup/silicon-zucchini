@@ -31,6 +31,7 @@
     "fs-extra": "^0.16.5",
     "globby": "^1.2.0",
     "is-my-json-valid": "^2.10.0",
+    "json-schema-faker": "^0.1.5",
     "livereload": "^0.3.6",
     "lodash": "^3.5.0",
     "map-stream": "0.0.5",

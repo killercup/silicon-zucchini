@@ -6,6 +6,7 @@ var collect = Promise.promisify(require('collect-stream'));
 var writeFile = Promise.promisify(require('fs-extra').outputFile);
 var del = Promise.promisify(require('del'));
 var l = require('lodash');
+var SchemaFaker = require('json-schema-faker');
 
 var LOG_NAME = 'Zucchini';
 process.env.DEBUG = process.env.DEBUG ||
@@ -49,7 +50,8 @@ function defaultSettings(opts) {
     processData: l.identity,
     createRoutes: l.identity,
     destination: 'build',
-    templateHelpers: {}
+    templateHelpers: {},
+    styleguide: 'styleguide'
   });
 }
 
@@ -187,10 +189,91 @@ function serveZucchini(opts) {
   .catch(log.error);
 }
 
+function buildZucchiniGuide(opts) {
+  var settings = defaultSettings(opts);
+
+  return Promise.all([
+    collect(getSchemas(settings.schemas))
+    .then(function (schemas) {
+      return l.pluck(schemas, 'data');
+    }),
+    collect(getTemplates(settings.templates)),
+    del(settings.styleguide)
+  ])
+  .spread(function (schemas, templates) {
+    function getTemplate(name) {
+      return l.find(templates, function (t) {
+        return t.relative === name;
+      });
+    }
+
+    var components = l(templates)
+    .filter(function (template) {
+      return template.data.styleguide !== false;
+    })
+    .map(function (template) {
+      if (!template.data.input) {
+        log.warn(template.relative, "has no input schema!");
+        return false;
+      }
+      var sampleData = SchemaFaker(
+        template.data.input,
+        schemas.map(function (s) {
+          var sx = l.clone(s);
+          sx.id = '#' + sx.id;
+          return sx;
+        })
+      );
+
+      var html = S.renderTemplate(template, sampleData, {
+        schemas: schemas, getTemplate: getTemplate,
+        settings: {imports: l.defaults({
+          routes: {},
+          currentRoute: '',
+          path: path
+        }, settings.templateHelpers)}
+      });
+
+      log.info('-', template.relative);
+
+      return {
+        title: template.data.title,
+        path: template.relative,
+        demo: html
+      };
+    })
+    .compact()
+    .value();
+
+    return S.renderTemplate(
+      getTemplate('templates/styleguide.html'),
+      {components: components},
+      {
+        schemas: schemas, getTemplate: getTemplate,
+        settings: {imports: l.defaults({
+          routes: {},
+          currentRoute: '',
+          path: path
+        }, settings.templateHelpers)}
+      }
+    );
+  })
+  .then(function (styleguide) {
+    return writeFile(
+      path.join(settings.destination, settings.styleguide, 'index.html'),
+      styleguide
+    );
+  })
+  .then(function () {
+    log.log('✓', "Styleguide");
+  });
+}
+
 module.exports = {
   build: buildSiliconZucchini,
   compile: compileAZucchini,
   watch: watchMyZucchini,
   serve: serveZucchini,
+  styleguide: buildZucchiniGuide,
   Helpers: S
 };

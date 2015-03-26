@@ -1,0 +1,32 @@
+---
+name: "Styleguide"
+styleguide: false
+input:
+  type: 'object'
+  required: ['components']
+  properties:
+    components:
+      type: 'array'
+---
+{{ include("templates/_head.html", data) }}
+<h1>Styleguide</h1>
+
+{% data.components.forEach(function (component) { %}
+<section class="styleguide-component">
+  <h2>{{ component.name }}</h2>
+  <p>
+    <code>{{ component.path }}</code>
+  </p>
+  {% if (component.path.match(/^templates\//)) { %}
+  <iframe class="demo" sandbox=""
+    srcdoc="{{ component.demo.replace(/\n/g, '').replace(/&/g, '&amp;').replace(/"/g, '&quot;') }}">
+  </iframe>
+  {% } else { %}
+  <div class="demo">
+    {{ component.demo }}
+  </div>
+  {% } %}
+</section>
+{% }) %}
+
+{{ include("templates/_tail.html", data) }}
