@@ -34,10 +34,10 @@
     "json-schema-faker": "^0.1.5",
     "livereload": "^0.3.6",
     "lodash": "^3.5.0",
-    "map-stream": "0.0.5",
     "markdown-it": "^4.0.2",
     "node-static": "^0.7.6",
     "slug": "^0.8.0",
+    "through2": "^0.6.3",
     "underscore.string": "^3.0.3",
     "vinyl-fs": "^1.0.0"
   },
