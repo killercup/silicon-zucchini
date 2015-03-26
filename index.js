@@ -44,6 +44,16 @@ function getTemplates(src) {
   ;
 }
 
+/**
+ * ## Helpers
+ */
+
+function findTemplate(templates, name) {
+  return l.find(templates, function (t) {
+    return t.relative === name;
+  });
+}
+
 function defaultSettings(opts) {
   return l.defaults({}, opts, {
     data: './data/**/*.{json,cson,md}',
@@ -94,12 +104,7 @@ function buildSiliconZucchini(opts) {
     });
   })
   .spread(function (data, schemas, templates) {
-    function getTemplate(name) {
-      return l.find(templates, function (t) {
-        return t.relative === name;
-      });
-    }
-
+    var getTemplate = findTemplate.bind(null, templates);
     var routes = l.flatten(settings.createRoutes(data, schemas, getTemplate));
     var routesByPath = l.indexBy(routes, 'route');
 
@@ -157,8 +162,12 @@ function watchMyZucchini(opts, cb) {
 
 function buildZucchiniGuide(opts) {
   var settings = defaultSettings(opts);
+  var filePath = path.join(settings.styleguide, 'index.html');
 
-  return Promise.all([
+  var output = new stream.Readable({ objectMode: true });
+  output._read = l.noop; /* eslint no-underscore-dangle: 0 */
+
+  Promise.all([
     collect(getSchemas(settings.schemas))
     .then(function (schemas) {
       return l.pluck(schemas, 'data');
@@ -166,17 +175,13 @@ function buildZucchiniGuide(opts) {
     collect(getTemplates(settings.templates))
   ])
   .spread(function (schemas, templates) {
-    function getTemplate(name) {
-      return l.find(templates, function (t) {
-        return t.relative === name;
-      });
-    }
+    var getTemplate = findTemplate.bind(null, templates);
 
     var components = l(templates)
     .filter(function (template) {
       return template.data.styleguide !== false;
     })
-    .map(function (template) {
+    .map(function renderStyleguideComponent(template) {
       if (!template.data.input) {
         log.warn(template.relative, "has no input schema!");
         return false;
@@ -223,15 +228,21 @@ function buildZucchiniGuide(opts) {
       }
     );
   })
-  .then(function (styleguide) {
-    return writeFile(
-      path.join(settings.destination, settings.styleguide, 'index.html'),
-      styleguide
-    );
+  .then(function (html) {
+    var file = new File({
+      path: filePath,
+      contents: new Buffer(html)
+    });
+    output.push(file);
+    log.log('✓', filePath);
   })
-  .then(function () {
-    log.log('✓', "Styleguide");
+  .catch(function (err) {
+    err.relative = filePath;
+    log.error('✘', filePath, err);
+    throw err;
   });
+
+  return output;
 }
 
 module.exports = {

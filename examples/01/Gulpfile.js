@@ -1,3 +1,7 @@
+/**
+ * ## Build Tasks
+ */
+
 var l = require('lodash');
 var path = require('path');
 var del = require('del');
@@ -6,6 +10,10 @@ var connect = require('gulp-connect');
 
 var SiliconZucchini = require('../../');
 var S = SiliconZucchini.Helpers;
+
+/**
+ * ## Settings
+ */
 
 var ZUCCHINI_SETTINGS = {
   data: './data/**/*.{json,cson,md}',
@@ -21,6 +29,10 @@ var ZUCCHINI_SETTINGS = {
     S: require('underscore.string')
   }
 };
+
+/**
+ * ## Work
+ */
 
 function setDataDefaults(dataStream) {
   return dataStream
@@ -68,6 +80,10 @@ function createRoutes(data, schemas, getTemplate) {
   ];
 }
 
+/**
+ * ## Tasks
+ */
+
 gulp.task('clean', function (cb) {
   del(ZUCCHINI_SETTINGS.destination, cb);
 });
@@ -78,12 +94,22 @@ gulp.task('build', ['clean'], function () {
   .pipe(connect.reload());
 });
 
-gulp.task('watch', ['clean', 'build'], function () {
+gulp.task('styleguide', function () {
+  return SiliconZucchini.styleguide(ZUCCHINI_SETTINGS)
+  .pipe(gulp.dest(ZUCCHINI_SETTINGS.destination))
+  .pipe(connect.reload());
+});
+
+/**
+ * ## "Start Working" Tasks
+ */
+
+gulp.task('watch', ['clean', 'build', 'styleguide'], function () {
   return gulp.watch(l.flatten([
     ZUCCHINI_SETTINGS.data,
     ZUCCHINI_SETTINGS.schemas,
     ZUCCHINI_SETTINGS.templates
-  ]), ['build']);
+  ]), ['build', 'styleguide']);
 });
 
 gulp.task('serve', ['watch'], function () {
@@ -91,10 +117,6 @@ gulp.task('serve', ['watch'], function () {
     root: ZUCCHINI_SETTINGS.destination,
     livereload: true
   });
-});
-
-gulp.task('styleguilde', function () {
-  SiliconZucchini.styleguide(ZUCCHINI_SETTINGS);
 });
 
 gulp.task('default', ['build']);
