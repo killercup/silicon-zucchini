@@ -234,7 +234,7 @@ function buildZucchiniGuide(opts) {
       contents: new Buffer(html)
     });
     output.push(file);
-    log.log('✓', filePath);
+    log.info('✓', filePath);
   })
   .catch(function (err) {
     err.relative = filePath;

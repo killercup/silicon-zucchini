@@ -31,7 +31,7 @@ var ZUCCHINI_SETTINGS = {
 };
 
 /**
- * ## Work
+ * ## Zucchini
  */
 
 function setDataDefaults(dataStream) {
@@ -81,42 +81,60 @@ function createRoutes(data, schemas, getTemplate) {
 }
 
 /**
- * ## Tasks
+ * ## Work
  */
 
-gulp.task('clean', function (cb) {
+function clean(cb) {
   del(ZUCCHINI_SETTINGS.destination, cb);
-});
+}
 
-gulp.task('build', ['clean'], function () {
+function build() {
   return SiliconZucchini.compile(ZUCCHINI_SETTINGS)
   .pipe(gulp.dest(ZUCCHINI_SETTINGS.destination))
   .pipe(connect.reload());
-});
+}
 
-gulp.task('styleguide', function () {
+function styleguide() {
   return SiliconZucchini.styleguide(ZUCCHINI_SETTINGS)
   .pipe(gulp.dest(ZUCCHINI_SETTINGS.destination))
   .pipe(connect.reload());
-});
+}
 
-/**
- * ## "Start Working" Tasks
- */
+function watch() {
+  gulp.watch(
+    [
+      ZUCCHINI_SETTINGS.data,
+      ZUCCHINI_SETTINGS.schemas,
+      ZUCCHINI_SETTINGS.templates
+    ],
+    gulp.parallel(build, styleguide)
+  );
+}
 
-gulp.task('watch', ['clean', 'build', 'styleguide'], function () {
-  return gulp.watch(l.flatten([
-    ZUCCHINI_SETTINGS.data,
-    ZUCCHINI_SETTINGS.schemas,
-    ZUCCHINI_SETTINGS.templates
-  ]), ['build', 'styleguide']);
-});
-
-gulp.task('serve', ['watch'], function () {
+function serve() {
   connect.server({
     root: ZUCCHINI_SETTINGS.destination,
     livereload: true
   });
-});
+}
 
-gulp.task('default', ['build']);
+/**
+ * ## Tasks
+ */
+
+gulp.task('build', gulp.series(clean, build));
+
+gulp.task('styleguide', gulp.series(clean, styleguide));
+
+gulp.task('watch', gulp.series(
+  clean,
+  gulp.parallel(build, styleguide),
+  watch
+));
+
+gulp.task('default', gulp.series(
+  clean,
+  gulp.parallel(build, styleguide)
+));
+
+gulp.task('serve', gulp.parallel('default', serve, watch));
