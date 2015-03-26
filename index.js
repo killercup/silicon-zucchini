@@ -207,7 +207,7 @@ function buildZucchiniGuide(opts) {
       log.info('-', template.relative);
 
       return {
-        title: template.data.title,
+        name: template.data.name,
         path: template.relative,
         demo: html
       };
