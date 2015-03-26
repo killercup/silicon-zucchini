@@ -5,7 +5,6 @@ var stream = require('stream');
 var Promise = require('bluebird');
 if (process.env.DEBUG) { Promise.longStackTraces(); }
 var collect = Promise.promisify(require('collect-stream'));
-var writeFile = Promise.promisify(require('fs-extra').outputFile);
 var l = require('lodash');
 var SchemaFaker = require('json-schema-faker');
 
@@ -217,7 +216,7 @@ function buildZucchiniGuide(opts) {
 
     return S.renderTemplate(
       getTemplate('templates/styleguide.html'),
-      {components: components},
+      {title: "Styelguide", components: components},
       {
         schemas: schemas, getTemplate: getTemplate,
         settings: {imports: l.defaults({
