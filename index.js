@@ -1,13 +1,18 @@
 var fs = require('vinyl-fs');
 var path = require('path');
 var Promise = require('bluebird');
+Promise.longStackTraces();
 var collect = Promise.promisify(require('collect-stream'));
 var writeFile = Promise.promisify(require('fs-extra').outputFile);
 var del = Promise.promisify(require('del'));
 var l = require('lodash');
 
 var LOG_NAME = 'Zucchini';
-process.env.DEBUG = process.env.DEBUG || LOG_NAME + ':*';
+process.env.DEBUG = process.env.DEBUG ||
+  ['log', 'warn', 'error']
+  .map(function (i) { return LOG_NAME + ':' + i; })
+  .join(',');
+
 var log = require('debug-logger')(LOG_NAME);
 log.inspectOptions = {colors: true};
 
@@ -32,6 +37,7 @@ function getSchemas(src) {
 function getTemplates(src) {
   return fs.src(src)
   .pipe(S.loadCsonFrontmatter())
+  .pipe(S.templateValidate())
   ;
 }
 

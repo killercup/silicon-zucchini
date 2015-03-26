@@ -2,9 +2,10 @@
 name: "Article"
 input:
   type: "object"
-  articles:
-    type: "array"
-    items: { $ref: "#article" }
+  properties:
+    articles:
+      type: "array"
+      items: { $ref: "#article" }
 ---
 {{ include("templates/_head.html", data) }}
 
