@@ -48,9 +48,13 @@ function getTemplates(src) {
  */
 
 function findTemplate(templates, name) {
-  return l.find(templates, function (t) {
+  var file = l.find(templates, function (t) {
     return t.relative === name;
   });
+  if (!file) {
+    throw new Error("Template `" + name + "` not found.");
+  }
+  return file;
 }
 
 function defaultSettings(opts) {
@@ -133,7 +137,7 @@ function buildSiliconZucchini(opts) {
         log.info('✓', filePath);
       })
       .catch(function (err) {
-        err.relative = filePath;
+        err.message = "Error rendering `" + filePath + "`: " + err.message;
         log.error('✘', filePath, err);
         throw err;
       });
@@ -194,14 +198,21 @@ function buildZucchiniGuide(opts) {
         })
       );
 
-      var html = S.renderTemplate(template, sampleData, {
-        schemas: schemas, getTemplate: getTemplate,
-        settings: {imports: l.defaults({
-          routes: {},
-          currentRoute: '',
-          path: path
-        }, settings.templateHelpers)}
-      });
+      var html;
+      try {
+        html = S.renderTemplate(template, sampleData, {
+          schemas: schemas, getTemplate: getTemplate,
+          settings: {imports: l.defaults({
+            routes: {},
+            currentRoute: '',
+            path: path
+          }, settings.templateHelpers)}
+        });
+      } catch (err) {
+        err.message = "Error rendering `" + template.relative +
+          "`: " + err.message;
+        throw err;
+      }
 
       log.info('-', template.relative);
 
