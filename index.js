@@ -47,16 +47,6 @@ function getTemplates(src) {
  * ## Helpers
  */
 
-function findTemplate(templates, name) {
-  var file = l.find(templates, function (t) {
-    return t.relative === name;
-  });
-  if (!file) {
-    throw new Error("Template `" + name + "` not found.");
-  }
-  return file;
-}
-
 function defaultSettings(opts) {
   return l.defaults({}, opts, {
     data: './data/**/*.{json,cson,md}',
@@ -107,7 +97,7 @@ function buildSiliconZucchini(opts) {
     });
   })
   .spread(function (data, schemas, templates) {
-    var getTemplate = findTemplate.bind(null, templates);
+    var getTemplate = S.findTemplate.bind(null, templates);
     var routes = l.flatten(settings.createRoutes(data, schemas, getTemplate));
     var routesByPath = l.indexBy(routes, 'route');
 
@@ -121,7 +111,8 @@ function buildSiliconZucchini(opts) {
         return S.renderTemplate(route.layout, route.data, {
           schemas: schemas, getTemplate: getTemplate,
           settings: {imports: l.defaults({
-            routes: routesByPath,
+            routes: S.routesToPageTree(routes),
+            routesByPath: routesByPath,
             currentRoute: route,
             path: path
           }, settings.templateHelpers)}
@@ -178,7 +169,7 @@ function buildZucchiniGuide(opts) {
     collect(getTemplates(settings.templates))
   ])
   .spread(function (schemas, templates) {
-    var getTemplate = findTemplate.bind(null, templates);
+    var getTemplate = S.findTemplate.bind(null, templates);
 
     var components = l(templates)
     .filter(function (template) {

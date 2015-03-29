@@ -17,7 +17,7 @@ describe("Silicon Zucchini", function () {
   examples.forEach(function (example) {
     it("Example " + example, function () {
       var examplePath = path.resolve(EXAMPLES_PATH, example);
-      return exec('gulp', ['build'], {
+      return exec('gulp', ['build', '--silent'], {
         cwd: examplePath, env: l.defaults({DEBUG: 'false'}, process.env)
       })
       .then(function () {

@@ -5,7 +5,7 @@ name: "Start"
 
 <nav>
   <ul>
-  {% l.map(routes, function (route, url) { %}
+  {% l.map(routesByPath, function (route, url) { %}
     <li{{ currentRoute === path ? ' class="active"' : '' }}>
       <a href="{{ path.normalize('/' + url + '/') }}">
         {{route.data.title}}
