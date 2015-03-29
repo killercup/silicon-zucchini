@@ -7,6 +7,7 @@ var path = require('path');
 var del = require('del');
 var gulp = require('gulp');
 var connect = require('gulp-connect');
+var slug = require('slug');
 
 var SiliconZucchini = require('../../');
 var S = SiliconZucchini.Helpers;
@@ -39,7 +40,7 @@ function setDataDefaults(dataStream) {
   .pipe(S.dataDefaults('^articles/', {
     schema: {$ref: '#article'},
     slug: function (a) {
-      return S.slug(a.data.title).toLowerCase();
+      return slug(a.data.title).toLowerCase();
     }
   }))
   .pipe(S.dataDefaults('^pages/', {
