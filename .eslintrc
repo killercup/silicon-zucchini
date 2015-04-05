@@ -8,8 +8,7 @@
     "ecmascript": 5
   },
   "plugins": [
-    "mocha",
-    "nodeca"
+    "mocha"
   ],
   "globals": {
     "Promise": true
@@ -39,9 +38,7 @@
     "new-cap": 0,
     "no-trailing-spaces": 1,
     "no-mixed-spaces-and-tabs": 2,
-    # "indent": [2, 2, {"indentSwitchCase": true}],
-    "nodeca/indent": [ 2, "spaces", 2 ],
-    "nodeca/no-lodash-aliases": 1,
+    "indent": [2, 2, {"indentSwitchCase": true}],
     "space-before-blocks": [1, "always"],
     "space-after-keywords": [1, "always"],
     "space-before-function-parentheses": [2, {"anonymous": "always", "named": "never"}],

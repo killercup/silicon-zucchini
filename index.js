@@ -251,5 +251,6 @@ module.exports = {
   compile: compileAZucchini,
   watch: watchMyZucchini,
   styleguide: buildZucchiniGuide,
-  Helpers: S
+  Helpers: S,
+  Server: require('./server')
 };

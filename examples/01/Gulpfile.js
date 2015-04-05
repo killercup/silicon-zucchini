@@ -18,6 +18,7 @@ var S = SiliconZucchini.Helpers;
 
 var ZUCCHINI_SETTINGS = {
   data: './data/**/*.{json,cson,md}',
+  data_dir: './data',
   schemas: './src/schemas/**/*.{json,cson}',
   templates: './src/**/*.html',
   destination: 'build',
@@ -28,7 +29,9 @@ var ZUCCHINI_SETTINGS = {
   templateHelpers: {
     l: l,
     S: require('underscore.string')
-  }
+  },
+
+  admin_port: 3001
 };
 
 /**
@@ -113,9 +116,17 @@ function watch() {
 }
 
 function serve() {
-  connect.server({
+  return connect.server({
     root: ZUCCHINI_SETTINGS.destination,
     livereload: true
+  });
+}
+
+function adminPanel() {
+  return SiliconZucchini.Server(ZUCCHINI_SETTINGS)
+  .listen(ZUCCHINI_SETTINGS.admin_port, function () {
+    console.log('Admin panel on http://localhost:' +
+      ZUCCHINI_SETTINGS.admin_port);
   });
 }
 
@@ -139,3 +150,5 @@ gulp.task('default', gulp.series(
 ));
 
 gulp.task('serve', gulp.parallel('default', serve, watch));
+
+gulp.task('admin', adminPanel);

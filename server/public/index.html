@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Silicon Zucchini :: Admin Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css">
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <h1>Hi there!</h1>
+    </header>
+
+    <div class="row">
+      <aside id="file-tree" class="col-lg-4">
+
+      </aside>
+      <section id="editor" class="col-lg-8">
+
+      </section>
+    </div>
+  </main>
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/zepto/1.1.4/zepto.min.js"></script>
+  <script src="/static/jsoneditor.min.js"></script>
+
+  <script>
+    Zepto(function ($) {
+      JSONEditor.defaults.options.theme = 'bootstrap3';
+
+      var $fileTree = $('#file-tree');
+      var $editor = document.getElementById("editor");
+      var editor;
+
+      function renderTree(children) {
+        return children.map(function (node) {
+          return '<li>' +
+            '<span>' + node.relative + '</span>' +
+            (
+              (node.children && node.children.length)
+              ? '<ul>' + renderTree(node.children).join('') + '</ul>'
+              : ''
+            ) +
+            '</li>';
+        });
+      }
+
+      fetch('/files')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        console.log(data);
+        $fileTree.append(
+          '<ul>' + renderTree(data.tree.children).join('') + '</ul>'
+        );
+      });
+
+      fetch('/schemas')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        editor = new JSONEditor(document.getElementById("editor"), {
+          schema: data.schemas[1]
+        });
+      });
+    });
+  </script>
+</body>
+</html>
