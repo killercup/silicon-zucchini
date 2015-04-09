@@ -19,41 +19,16 @@ log.inspectOptions = {colors: true};
 
 var S = require('./lib');
 
-function getData(src) {
-  return fs.src(src)
-  .pipe(S.loadCson())
-  .pipe(S.loadJson())
-  .pipe(S.loadCsonFrontmatter())
-  .pipe(S.loadMarkdown())
-  ;
-}
-
-function getSchemas(src) {
-  return fs.src(src)
-  .pipe(S.loadCson())
-  .pipe(S.loadJson())
-  .pipe(S.schemasValidate({requireId: true}))
-  ;
-}
-
-function getTemplates(src) {
-  return fs.src(src)
-  .pipe(S.loadCsonFrontmatter())
-  .pipe(S.templateValidate())
-  ;
-}
-
 /**
  * ## Helpers
  */
 
-function defaultSettings(opts) {
-  return l.defaults({}, opts, {
+function defaultSettings(inputs, opts) {
+  return l.defaults({}, inputs, opts, {
     data: './data/**/*.{json,cson,md}',
     schemas: './src/schemas/**/*.{json,cson}',
     templates: './src/**/*.html',
-    processData: l.identity,
-    createRoutes: l.identity,
+    createRoutes: function () { throw new Error("No Routes implemented!"); },
     destination: 'build',
     templateHelpers: {},
     styleguide: 'styleguide'
@@ -62,12 +37,11 @@ function defaultSettings(opts) {
 
 /**
  * # Build a Silicon Zucchini
- * @param {Object}    opts               A truckload of options
- * @param {String}   [opts.data]         Path glob to find data files
- * @param {String}   [opts.schemas]      Path glob to find schema files
- * @param {String}   [opts.templates]    Path glob to find template files
- * @param {Function} [opts.processData]  Takes a vinyl-fs stream of data files,
- *   manipulates that data, returns a vinyl-fs stream
+ * @param {Object}   input               Input streams
+ * @param {String}   [input.data]        Vinyl stream of data files
+ * @param {String}   [input.schemas]     Vinyl stream of schema files
+ * @param {String}   [input.templates]   Vinyl stream of template files
+ * @param {Object}   opts                A truckload of options
  * @param {Function} [opts.createRoutes] Callback to create a route object.
  *   Input parameters are `data: [{}], schemas: [{}], getTemplate: Function`.
  *   Needs to return an array of Route objects or arrays (it will be flattened).
@@ -77,19 +51,19 @@ function defaultSettings(opts) {
  *   be available in templates.
  * @return {Promise} Will be resolved when all processing is done.
  */
-function buildSiliconZucchini(opts) {
-  var settings = defaultSettings(opts);
+function buildSiliconZucchini(input, opts) {
+  var settings = defaultSettings(input, opts);
 
   var output = new stream.Readable({ objectMode: true });
   output._read = l.noop; /* eslint no-underscore-dangle: 0 */
 
   Promise.all([
-    collect(settings.processData(getData(settings.data))),
-    collect(getSchemas(settings.schemas))
+    collect(settings.data),
+    collect(settings.schemas)
     .then(function (schemas) {
       return l.indexBy(l.pluck(schemas, 'data'), 'id');
     }),
-    collect(getTemplates(settings.templates))
+    collect(settings.templates)
   ])
   .tap(function (inputs) {
     inputs[0].map(function (item) {
@@ -145,28 +119,24 @@ function buildSiliconZucchini(opts) {
   return output;
 }
 
-function compileAZucchini(opts) {
-  return buildSiliconZucchini(opts);
-}
-
 function watchMyZucchini(opts, cb) {
   fs.watch(l.flatten([opts.data, opts.schemas, opts.templates]))
   .on('change', cb);
 }
 
-function buildZucchiniGuide(opts) {
-  var settings = defaultSettings(opts);
+function buildZucchiniGuide(inputs, opts) {
+  var settings = defaultSettings(inputs, opts);
   var filePath = path.join(settings.styleguide, 'index.html');
 
   var output = new stream.Readable({ objectMode: true });
   output._read = l.noop; /* eslint no-underscore-dangle: 0 */
 
   Promise.all([
-    collect(getSchemas(settings.schemas))
+    collect(settings.schemas)
     .then(function (schemas) {
       return l.pluck(schemas, 'data');
     }),
-    collect(getTemplates(settings.templates))
+    collect(settings.templates)
   ])
   .spread(function (schemas, templates) {
     var getTemplate = S.findTemplate.bind(null, templates);
@@ -248,7 +218,7 @@ function buildZucchiniGuide(opts) {
 
 module.exports = {
   build: buildSiliconZucchini,
-  compile: compileAZucchini,
+  compile: buildSiliconZucchini,
   watch: watchMyZucchini,
   styleguide: buildZucchiniGuide,
   Helpers: S

@@ -21,8 +21,6 @@ var ZUCCHINI_SETTINGS = {
   schemas: './src/schemas/**/*.{json,cson}',
   templates: './src/**/*.html',
   destination: 'build',
-
-  processData: setDataDefaults,
   createRoutes: createRoutes,
 
   templateHelpers: {
@@ -35,8 +33,12 @@ var ZUCCHINI_SETTINGS = {
  * ## Zucchini
  */
 
-function setDataDefaults(dataStream) {
-  return dataStream
+function getData(src) {
+  return gulp.src(src)
+  .pipe(S.loadCson())
+  .pipe(S.loadJson())
+  .pipe(S.loadCsonFrontmatter())
+  .pipe(S.loadMarkdown())
   .pipe(S.dataDefaults('^articles/', {
     schema: {$ref: '#article'},
     slug: function (a) {
@@ -52,6 +54,29 @@ function setDataDefaults(dataStream) {
   .pipe(S.uniqFields(['slug'], '^articles/'))
   .pipe(S.uniqFields(['permalink'], '^pages/'))
   ;
+}
+
+function getSchemas(src) {
+  return gulp.src(src)
+  .pipe(S.loadCson())
+  .pipe(S.loadJson())
+  .pipe(S.schemasValidate({requireId: true}))
+  ;
+}
+
+function getTemplates(src) {
+  return gulp.src(src)
+  .pipe(S.loadCsonFrontmatter())
+  .pipe(S.templateValidate())
+  ;
+}
+
+function getInputs(skipData) {
+  return {
+    data: skipData ? null : getData(ZUCCHINI_SETTINGS.data),
+    templates: getTemplates(ZUCCHINI_SETTINGS.templates),
+    schemas: getSchemas(ZUCCHINI_SETTINGS.schemas)
+  };
 }
 
 function createRoutes(data, schemas, getTemplate) {
@@ -90,13 +115,13 @@ function clean(cb) {
 }
 
 function build() {
-  return SiliconZucchini.compile(ZUCCHINI_SETTINGS)
+  return SiliconZucchini.compile(getInputs(), ZUCCHINI_SETTINGS)
   .pipe(gulp.dest(ZUCCHINI_SETTINGS.destination))
   .pipe(connect.reload());
 }
 
 function styleguide() {
-  return SiliconZucchini.styleguide(ZUCCHINI_SETTINGS)
+  return SiliconZucchini.styleguide(getInputs(true), ZUCCHINI_SETTINGS)
   .pipe(gulp.dest(ZUCCHINI_SETTINGS.destination))
   .pipe(connect.reload());
 }

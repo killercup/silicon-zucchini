@@ -1,9 +1,13 @@
 title: "Article"
+description: "Article"
 id: "article"
 type: "object"
 required: ["title", "content"]
 properties:
-  title: {type: "string"}
-  teaser: {type: "string"}
-  content: {type: "string"}
-  date: {type: "string"}
+  title: {type: "string", description: "Title"}
+  teaser: {type: "string", description: "Teaser"}
+  subtitle: {type: "string"}
+  excerpt: {type: "string"}
+  content: {type: "string", description: "Content"}
+  date: {type: "string", description: "Date"}
+  layout: {type: "string"}

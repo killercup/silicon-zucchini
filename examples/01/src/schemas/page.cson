@@ -8,3 +8,6 @@ properties:
     maxLength: 255
   content:
     type: "string"
+  subtitle: {type: "string"}
+  permalink: {type: "string"}
+  layout: {type: "string"}
