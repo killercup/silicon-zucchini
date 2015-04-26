@@ -2,7 +2,7 @@ var l = require('lodash');
 var fs = require('fs');
 var path = require('path');
 var equalDirs = require('assert-dir-equal');
-var exec = require('./lib/helpers/exec');
+var exec = require('./src/helpers/exec');
 
 var EXAMPLES_PATH = './examples';
 

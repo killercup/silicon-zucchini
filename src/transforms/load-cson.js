@@ -1,4 +1,4 @@
-var mapFileContent = require('./helpers/map-file-content');
+var mapFileContent = require('../helpers/map-file-content');
 var CSON = require('cson');
 
 module.exports = mapFileContent.bind(null,

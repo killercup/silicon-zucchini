@@ -1,4 +1,4 @@
-var mapFileContent = require('./helpers/map-file-content');
+var mapFileContent = require('../helpers/map-file-content');
 
 module.exports = mapFileContent.bind(null,
   JSON.parse.bind(JSON),

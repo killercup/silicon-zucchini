@@ -4,7 +4,7 @@ var validate = require('is-my-json-valid');
 var LOG_NAME = 'Zucchini';
 var log = require('debug-logger')(LOG_NAME);
 
-var HANDLEBAR_STYLE = require('./helpers/handlebar-style');
+var HANDLEBAR_STYLE = require('../helpers/handlebar-style');
 
 module.exports = function renderTemplate(template, data, opts) {
   if (!template) {

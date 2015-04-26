@@ -1,6 +1,5 @@
 var l = require('lodash');
 var map = require('through2').obj;
-var Promise = require('bluebird');
 
 function callProps(context, obj) {
   return l.mapValues(obj, function (value) {
