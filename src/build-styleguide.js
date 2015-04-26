@@ -104,13 +104,17 @@ function buildZucchiniGuide(inputs, opts) {
       path: filePath,
       contents: new Buffer(html)
     });
-    output.push(file);
     log.info('✓', filePath);
+
+    output.push(file);
+    output.push(null);
   })
   .catch(function (err) {
     err.relative = filePath;
     log.error('✘', filePath, err);
-    throw err;
+
+    output.emit('erro', err);
+    output.push(null);
   });
 
   return output;
