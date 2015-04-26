@@ -1,6 +1,6 @@
 {
   "name": "silicon-zucchini",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Generate glorious and amazing static sites",
   "main": "index.js",
   "scripts": {
