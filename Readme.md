@@ -1,6 +1,6 @@
 # Silicon Zucchini
 
-_Silicon Zucchini_ is a simple and opinionated static site generator. It differentiates itself from similar tools by it's focus on the usage of JSON Schema definitions for various tasks.
+_Silicon Zucchini_ is a simple and opinionated static site generator. It differentiates itself from similar tools by focussing on the usage of JSON Schema definitions for various tasks.
 
 [![Build Status](https://travis-ci.org/killercup/silicon-zucchini.svg?branch=master)](https://travis-ci.org/killercup/silicon-zucchini)
 
