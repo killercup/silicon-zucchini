@@ -53,10 +53,12 @@ module.exports = function buildSiliconZucchini(input, opts) {
     var routesByPath = l.indexBy(routes, 'route');
 
     return Promise.map(routes, function (route) {
-      var filePath = path.join(
-        route.route.replace(/^\//, ''),
-        'index.html'
-      );
+      var filePath = route.isFile ?
+        route.route :
+        path.join(
+          route.route.replace(/^\//, ''),
+          'index.html'
+        );
 
       return Promise.try(function () {
         return S.renderTemplate(route.layout, route.data, {
